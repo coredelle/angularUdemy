@@ -21,6 +21,7 @@ export class RecipeEditComponent implements OnInit {
         this.id = +params.id;
         this.editMode = params.id != null;
       });
+    this.initForm();
   }
 
   private initForm() {
@@ -41,4 +42,7 @@ export class RecipeEditComponent implements OnInit {
     });
   }
 
+  onSubmit() {
+    console.log(this.recipeForm);
+  }
 }

@@ -3,6 +3,7 @@ import {ActivatedRoute} from '@angular/router';
 import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {RecipeService} from '../recipe.service';
 import {IngredientModel} from '../../../models/ingredient.model';
+import {RecipeModel} from '../../../models/recipe.model';
 
 @Component({
   selector: 'app-recipe-edit',
@@ -60,7 +61,19 @@ export class RecipeEditComponent implements OnInit {
   }
 
   onSubmit() {
-    console.log(this.recipeForm);
+    const newRecipe = new RecipeModel(
+      this.recipeForm.value.name,
+      this.recipeForm.value.description,
+      this.recipeForm.value.imagePath,
+      this.recipeForm.value.ingredients
+    );
+    if (this.editMode) {
+      // could use newRecipe instead of this.recipeForm.value but this way is cleaner
+      this.recipeService.updateRecipe(this.id, this.recipeForm.value);
+    } else {
+      // could use newRecipe instead of this.recipeForm.value but this way is cleaner
+      this.recipeService.addRecipe(this.recipeForm.value);
+    }
   }
 
   get controls() { // a getter!

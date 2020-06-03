@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 import {HttpClient} from '@angular/common/http';
+import {UserModel} from './user.model';
+import {Subject} from 'rxjs';
+import {tap} from 'rxjs/operators';
 
 export interface AuthResponseData {
   kind: string;
@@ -15,6 +18,8 @@ export interface AuthResponseData {
   providedIn: 'root'
 })
 export class AuthService {
+
+  user = new Subject<UserModel>();
 
   constructor(private http: HttpClient) { }
 
@@ -35,6 +40,20 @@ export class AuthService {
         email,
         password,
         returnSecureToken: true
-      });
+      }).pipe(tap(resData => {
+        const expirationDate = new Date(new Date().getTime() + +resData.expiresIn * 1000);
+        const user = new UserModel(
+          resData.email,
+          resData.localId,
+          resData.idToken,
+          expirationDate
+        );
+        this.user.next(user);
+      })
+    );
+  }
+
+  private handleAuthentication(email: string, token: string, expiresIn: number) {
+
   }
 }

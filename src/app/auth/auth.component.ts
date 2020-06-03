@@ -37,6 +37,9 @@ export class AuthComponent {
       error => {
         console.log(error);
         this.error = error.error.error.message;
+        setTimeout(() => {
+          this.error = null;
+        }, 5000);
         this.isLoading = false;
       });
 

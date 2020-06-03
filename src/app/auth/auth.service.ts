@@ -30,7 +30,14 @@ export class AuthService {
         email,
         password,
         returnSecureToken: true
-      });
+      }).pipe(tap(resData => {
+        this.handleAuthentication(
+          resData.email,
+          resData.localId,
+          resData.idToken,
+          +resData.expiresIn);
+      })
+    );
   }
 
   signIn(email: string, password: string) {
@@ -41,19 +48,23 @@ export class AuthService {
         password,
         returnSecureToken: true
       }).pipe(tap(resData => {
-        const expirationDate = new Date(new Date().getTime() + +resData.expiresIn * 1000);
-        const user = new UserModel(
+        this.handleAuthentication(
           resData.email,
           resData.localId,
           resData.idToken,
-          expirationDate
-        );
-        this.user.next(user);
+          +resData.expiresIn);
       })
     );
   }
 
-  private handleAuthentication(email: string, token: string, expiresIn: number) {
-
+  private handleAuthentication(email: string, userId: string, token: string, expiresIn: number) {
+    const expirationDate = new Date(new Date().getTime() + expiresIn * 1000);
+    const user = new UserModel(
+      email,
+      userId,
+      token,
+      expirationDate
+    );
+    this.user.next(user);
   }
 }

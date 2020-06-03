@@ -23,7 +23,10 @@ export class AuthComponent {
 
     this.isLoading = true;
     if (this.isLoginMode) {
-      // ...
+      this.authService.signIn(email, password).subscribe(resData => {
+      console.log(resData);
+      this.isLoading = false;
+      });
     } else {
       this.authService.signUp(email, password).subscribe(resData => {
           console.log(resData);

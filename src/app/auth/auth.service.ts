@@ -4,6 +4,7 @@ import {UserModel} from './user.model';
 import {BehaviorSubject} from 'rxjs';
 import {tap} from 'rxjs/operators';
 import {Router} from '@angular/router';
+import set = Reflect.set;
 
 export interface AuthResponseData {
   kind: string;
@@ -20,6 +21,7 @@ export interface AuthResponseData {
 })
 export class AuthService {
   user = new BehaviorSubject<UserModel>(null);
+  private tokenExpirationTimer: any;
 
   constructor(private http: HttpClient, private router: Router) { }
 
@@ -77,12 +79,25 @@ export class AuthService {
 
     if (loadedUser.token) {
       this.user.next(loadedUser);
+      const expirationDuration = new Date(userData._tokenExpirationDate).getTime() - new Date().getTime();
+      this.autoLogout(expirationDuration);
     }
   }
 
   logout() {
     this.router.navigate(['/auth']);
     this.user.next(null);
+    localStorage.removeItem('userData');
+    if (this.tokenExpirationTimer) {
+      clearTimeout(this.tokenExpirationTimer);
+    }
+    this.tokenExpirationTimer = null;
+  }
+
+  autoLogout(expirationDuration: number) {
+    this.tokenExpirationTimer = setTimeout(() => {
+      this.logout();
+    }, expirationDuration);
   }
 
   private handleAuthentication(email: string, userId: string, token: string, expiresIn: number) {
@@ -94,6 +109,7 @@ export class AuthService {
       expirationDate
     );
     this.user.next(user);
+    this.autoLogout(expiresIn * 1000);
     localStorage.setItem('userData', JSON.stringify(user));
   }
 }
